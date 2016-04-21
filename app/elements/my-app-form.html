@@ -1,0 +1,314 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/geo-location/geo-location.html">
+
+<link rel="import" href="../../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../../bower_components/iron-validatable-behavior/iron-validatable-behavior.html">
+
+<link rel="import" href="../../bower_components/neon-animation/neon-animation-runner-behavior.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+
+<link rel="import" href="custom/bounce-in-animation.html">
+<link rel="import" href="my-app-config.html">
+
+<dom-module id="my-app-form">
+	
+  <template>
+	
+		<style>
+			:host {
+				xdisplay: block;
+				width: 100%;
+				margin: auto;
+				xoverflow: hidden;
+			}
+			paper-card {
+				margin: 16px auto;
+				padding: 8px 32px;
+				border-radius: 4px;
+			}
+			paper-button,
+			paper-icon-button,
+			paper-fab
+			{
+				-o-transition      : .25s;
+				-ms-transition     : .25s;
+				-moz-transition    : .25s;
+				-webkit-transition : .25s;
+				transition         : .25s;
+			}
+			.blur {
+				-webkit-filter: blur(5px);
+				-moz-filter: blur(5px);
+				-o-filter: blur(5px);
+				-ms-filter: blur(5px);
+				filter: blur(5px);
+			}
+			paper-button:hover,
+			paper-icon-button:hover,
+			paper-fab:hover,
+			.primary-button:hover
+			{
+				xbackground: white;
+				xcolor: black;
+				font-weight: bold;
+			}
+			paper-input {
+				width: 10em;
+				margin: 0 auto;
+			}
+			paper-tooltip {
+				--paper-tooltip-text-color: var(--paper-yellow-500);
+				font-weight: bold;
+			}
+			paper-spinner {
+				--paper-spinner-layer-1-color: var(--default-primary-color);
+        --paper-spinner-layer-2-color: var(--default-primary-color);
+        --paper-spinner-layer-3-color: var(--default-primary-color);
+        --paper-spinner-layer-4-color: var(--default-primary-color);
+			}
+			.spinner {
+				text-align: center;
+				margin: 16px auto;
+			}
+			paper-fab {
+				position: fixed;
+				top: 84px;
+				/*
+				right: calc(50% - 264px);
+				right: 264px;
+				--paper-fab-background: #ffa726;
+				--paper-fab-background: var(--accent-color);
+				margin: auto;
+				color: white;
+				*/
+				will-change: transform;
+				-webkit-transition: -webkit-transform 0.2s ease-in-out;
+				transition: transform 0.2s ease-in-out;
+			}
+			paper-fab.moveup {
+				transform: translate3d(0, -48px, 0);
+			}
+		</style>
+		
+		<my-app-config app="{{app}}"></my-app-config>
+		<geo-location watch-pos
+									maximum-age="30000"
+									latitude="{{latitude}}"
+									longitude="{{longitude}}">
+		</geo-location>
+		
+		<iron-ajax id="ajax" verbose xauto
+		           xmethod="POST" 
+							 xbody=""
+							 url="{{urlAjax}}"
+							 handle-as="json"
+							 last-response="{{ajax}}"
+							 on-error="_handleError"
+							 on-response="_handleResponseAjax"
+							 debounce-duration="300">
+		</iron-ajax>
+		<iron-ajax id="geo" verbose xauto
+		           xmethod="POST" 
+							 xbody=""
+							 url="{{urlGeo}}" 
+							 handle-as="json"
+							 last-response="{{addyOb}}"
+							 on-error="_handleError"
+							 on-response="_handleResponseGeo"
+							 debounce-duration="300">
+		</iron-ajax>
+
+		<paper-tooltip for="fab" 
+									 position="left">Auto-locate zip code
+		</paper-tooltip>
+		<paper-fab id="fab"
+							 icon="device:gps-fixed"
+							 on-tap="_getAddy"
+							 elevation="99"
+							 disabled>
+		</paper-fab>
+		
+		<paper-input id="input"
+								 label="Zip Code"
+								 value="{{addy::input}}"
+								 on-keydown="_checkEnter"
+								 allowed-pattern="[a-zA-Z]*"
+								 char-counter
+								 maxlength="5"
+								 auto-validate>
+			<paper-icon-button prefix
+												 id="reset"
+												 icon="clear"
+												 on-tap="_formReset"
+												 xdisabled>
+			</paper-icon-button>
+			<paper-icon-button suffix
+												 id="search"
+												 icon="search"
+												 on-tap="_formSubmit"
+												 xdisabled>
+			</paper-icon-button>
+		</paper-input>
+		<!---- >
+		<span>[[latitude]]</span>
+		<span>[[longitude]]</span>
+		<!---->
+		<div class="spinner" id="spindiv" hidden>
+			<paper-spinner id="spinner" alt="Checking movies..."></paper-spinner>
+		</div>
+		<paper-toast id="toast" text="Error occurred. Please try again."></paper-toast>
+		&nbsp;<!-- Hack fix for CSS bleed from paper-input maxlength attribute -->
+		
+  </template>
+
+	<script>
+		(function(){
+			//'use strict';
+			Polymer({
+				is: 'my-app-form',
+				behaviors: [
+					Polymer.NeonAnimationRunnerBehavior
+				],
+				properties: {
+					animationConfig: {
+						value: function() {
+							return {
+								entry: {
+									name: 'bounce-in-animation',
+									node: this.$.fab,
+									timing: {
+										duration: 1750
+										//easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+										//fill: 'both'
+									}
+								}
+							};
+						}
+					},
+					app: {
+						type: Object,
+						notify: true
+					},
+					items: {
+						type: Array,
+						notify: true,
+						value: function() {
+							return [];
+						},
+					},
+					urlAjax: {
+						type: String,
+						notify: true,
+						computed: '_computeUrlAjax(addy)'
+					},
+					urlGeo: {
+						type: String,
+						notify: true,
+						computed: '_computeUrlGeo(latitude, longitude)'
+					}
+				},
+				observers: [
+					'_positionChanged(latitude, longitude)'
+				],
+				// Listen for ENTER key
+				_checkEnter: function(e) {
+					if (e.keyCode === 13) {
+						//console.log(e);
+						this._formSubmit();
+					}
+				},
+				_formReset: function() {
+					this.set('addy', '');
+				},
+				_spinStart: function() {
+					this.$.spinner.reset();
+					this.set('$.spinner.active', true);
+					this.set('$.spindiv.hidden', false);
+				},
+				_spinStop: function() {
+					this.set('$.spindiv.hidden', true);
+					this.set('$.spinner.active', false);
+					this.$.spinner.reset();
+				},
+				_computeUrlGeo: function(lat, lon) {
+					var r = this.app.meta.data,
+							p = [ [ r.keys[0] , r.values[1]  ].join('=') ,
+										[ 'lat'     , lat          ].join('=') ,
+									  [ 'lon'     , lon          ].join('=') ].join('&');
+					return [ r.stem, p ].join('?');
+				},
+				_computeUrlAjax: function(zip) {
+					var r = this.app.meta.data,
+							p = [ [ r.keys[0] , r.values[0]  ].join('=') ,
+									  [ r.keys[1] , zip          ].join('=') ].join('&');
+					return [ r.stem, p ].join('?');
+				},
+				_formSubmit: function() {
+					this._spinStart();
+					this.$.ajax.generateRequest();
+				},
+				_getAddy: function() {
+					//console.log(this.urlGeo);return;
+					this.$.geo.generateRequest();
+					this._spinStart();
+				},
+				_positionChanged: function(lat, lon) {
+					var bool = !!lat && !!lon;
+					if (bool && this.$.fab.disabled) {
+						this.set( '$.fab.disabled' , false );
+						this.playAnimation('entry');
+					}
+				},
+				_handleError: function(e) {
+					console.log(e);
+					this.$.toast.show();
+					this._spinStop();
+				},
+				_handleResponseGeo: function() {
+					var t = this.addyOb;
+					if(t.zip5) {
+						this.set( 'addy', t.zip5  );
+						this.$.ajax.generateRequest();
+						this.fire( 'location-changed', t );
+					}
+					else {
+						console.log('Terminal Error: Can not resolve zip code');
+						this._spinStop();
+					}
+				},
+				_handleResponseAjax: function() {
+					//console.log(this.ajax);
+					try{
+						this.set( 'items', this.ajax );
+					  console.log(this.items);
+					}catch(e){
+						this.$.toast.show();
+						console.log(e);
+					}
+					this._spinStop();
+				}
+			});
+		})();
+	</script>
+	
+</dom-module>

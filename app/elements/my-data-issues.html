@@ -1,0 +1,141 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+
+
+<dom-module id="my-data-issues">
+		
+  <template>
+
+		<style is="custom-style">
+			body {
+				font-family: Roboto, Noto, sans-serif;
+			}
+			app-toolbar {
+				background-color: #4285f4;
+				color: #fff;
+				margin: 20px 0;
+			}
+			paper-icon-button {
+				--paper-icon-button-ink-color: white;
+			}
+			paper-progress {
+				display: block;
+				width: 100%;
+				--paper-progress-active-color: rgba(255, 255, 255, 0.5);
+				--paper-progress-container-color: transparent;
+			}
+			paper-icon-button + [title] {
+				margin-left: 24px;
+			}
+		</style>
+		
+		<app-toolbar>Random Text</app-toolbar>
+
+		<app-toolbar>
+			<paper-icon-button icon="delete"></paper-icon-button>
+			<paper-icon-button icon="search"></paper-icon-button>
+		</app-toolbar>
+
+		<app-toolbar>
+			<div title spacer>App name</div>
+		</app-toolbar>
+
+		<app-toolbar>
+			<div title>App name</div>
+		</app-toolbar>
+
+		<app-toolbar>
+			<paper-icon-button icon="menu"></paper-icon-button>
+			<div title>App name</div>
+		</app-toolbar>
+
+		<app-toolbar>
+			<paper-icon-button icon="menu"></paper-icon-button>
+			<div title>App name</div>
+			<paper-icon-button icon="search"></paper-icon-button>
+		</app-toolbar>
+
+		<app-toolbar>
+			<paper-icon-button icon="close"></paper-icon-button>
+			<div title>App name</div>
+		</app-toolbar>
+
+		<app-toolbar>
+			<paper-icon-button icon="close"></paper-icon-button>
+			<div title>App name</div>
+			<paper-progress value="10" indeterminate bottom-item></paper-progress>
+		</app-toolbar>
+		
+  </template>
+	
+	<script>
+	(function() {
+		//'use strict';
+		Polymer({
+			is: 'my-data-issues',
+			properties: {
+				items: {
+					type: Array
+				},
+				sortby: {
+					type: String,
+					value: 'timestamp'
+				}
+			},
+			observers: [
+				'signedInChanged(app.meta.signedIn)',
+				'_sortItems(items)'
+			],
+			_collapseExpand: function(e) {
+				var list = this.$.list;
+				var index = e.model.index;
+				var isExpanded = list.items[index].expanded;
+				list.set('items.' + index + '.expanded', !isExpanded);
+				list.updateSizeForItem(e.model.index);
+			},
+			iconForItem: function(/*item*/) {
+				//return item ? (item.integer < 50 ? 'star-border' : 'star') : '';
+				return 'star-border';
+			},
+			getClassForItem: function(item, expanded) {
+				if (typeof expanded === 'undefined') {
+					expanded = false;
+				}
+				return expanded ? 'item expanded' : 'item';
+			},
+			/*
+			_sortItems: function(a, b) {
+				return b.timestamp - a.timestamp;
+			},
+			*/
+			_sortItems: function(arr) {
+				arr.reverse();
+				//this.items.reverse();
+			},
+			signedInChanged: function(signedIn) {
+				if(!signedIn){
+					//this.$.fbc.disconnect();
+				}
+			}
+		});
+	})();
+	</script>
+	
+</dom-module>
+
+

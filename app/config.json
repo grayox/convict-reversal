@@ -1,0 +1,41 @@
+{
+	
+	"data": {
+		
+		"stem": "https://script.google.com/macros/s/AKfycbwlkeAjSW0xcvSwZNtftJqzsbDRAnufIghPvsA_rqL8BkohEE0/exec",
+		
+		"keys": [
+			"k" ,
+			"m"
+		],
+		
+		"values": [
+			"sf9888igjem2rwvssawq" ,
+			"p61z618ammp5leec6tnl"
+		]
+				
+	},
+	
+	"fbID": {
+		
+		"//"     : "// _setBlanks() method on my-view-main element defaults empty strings to .app for any property",
+		
+		"app"    : "burning-torch-4928",
+		
+		"//"     : "// ------- Typically, no properties beneath this line will need to change ------- ",
+		
+		"//"     : "// Central firebase setup for receiving <firebase-auth> 'location' attribute",
+		"//"     : "// Deprecating this concept in favor of individualized (app-specific) auth",
+		"auth"   : "",
+		"//auth" : "torrid-heat-2303",
+		
+		"//"     : "// Central data store for login and activity reporting",
+		"log"    : "",
+		"//log"  : "torrid-heat-2303",
+		
+		"//"     : "Firebase security rules documentation:",
+		"//"     : "// https://www.firebase.com/docs/hosting/guide/full-config.html#section-advanced-properties"
+		
+	}
+	
+}
